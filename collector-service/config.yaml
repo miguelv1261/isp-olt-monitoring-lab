@@ -1,0 +1,14 @@
+influx:
+url: http://influxdb:8086
+token: isp-token-123
+org: isp-org
+bucket: isp_network_metrics
+
+
+olts:
+- id: OLT-MA5800-01
+ip: 10.0.0.10
+username: admin
+password: admin123
+pon_ports: [0/1/0, 0/1/1]
+sample_onts: [1, 2, 3]

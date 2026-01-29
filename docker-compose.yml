@@ -1,78 +1,32 @@
 version: '3.9'
-
 services:
-  # ---------------------------
-  # OLT SIMULADA
-  # ---------------------------
-  olt-simulator:
-    image: python:3.11-slim
-    container_name: olt-simulator
-    working_dir: /app
-    volumes:
-      - ./olt-simulator:/app
-    command: python app.py
-    ports:
-      - "5000:5000"
-    networks:
-      - isp-net
+collector:
+build: ./collector-service
+container_name: collector-service
+depends_on:
+- influxdb
+networks: [isp-net]
 
-  # ---------------------------
-  # MICROSERVICIO DE MONITOREO
-  # ---------------------------
-  monitoring-service:
-    image: python:3.11-slim
-    container_name: monitoring-service
-    working_dir: /app
-    volumes:
-      - ./monitoring-service:/app
-    command: python app.py
-    depends_on:
-      - olt-simulator
-      - influxdb
-    ports:
-      - "8000:8000"
-    networks:
-      - isp-net
 
-  # ---------------------------
-  # INFLUXDB (BASE DE DATOS)
-  # ---------------------------
-  influxdb:
-    image: influxdb:2.7
-    container_name: influxdb
-    ports:
-      - "8086:8086"
-    volumes:
-      - influxdb-data:/var/lib/influxdb2
-    environment:
-      - DOCKER_INFLUXDB_INIT_MODE=setup
-      - DOCKER_INFLUXDB_INIT_USERNAME=admin
-      - DOCKER_INFLUXDB_INIT_PASSWORD=admin123
-      - DOCKER_INFLUXDB_INIT_ORG=isp-org
-      - DOCKER_INFLUXDB_INIT_BUCKET=olt_metrics
-      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=isp-token-123
-    networks:
-      - isp-net
+influxdb:
+image: influxdb:2.7
+ports: ["8086:8086"]
+environment:
+- DOCKER_INFLUXDB_INIT_MODE=setup
+- DOCKER_INFLUXDB_INIT_USERNAME=admin
+- DOCKER_INFLUXDB_INIT_PASSWORD=admin123
+- DOCKER_INFLUXDB_INIT_ORG=isp-org
+- DOCKER_INFLUXDB_INIT_BUCKET=isp_network_metrics
+- DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=isp-token-123
+networks: [isp-net]
 
-  # ---------------------------
-  # GRAFANA (DASHBOARD)
-  # ---------------------------
-  grafana:
-    image: grafana/grafana:latest
-    container_name: grafana
-    ports:
-      - "3000:3000"
-    depends_on:
-      - influxdb
-    volumes:
-      - grafana-data:/var/lib/grafana
-    networks:
-      - isp-net
+
+grafana:
+image: grafana/grafana
+ports: ["3000:3000"]
+networks: [isp-net]
+
 
 networks:
-  isp-net:
-    driver: bridge
-
-volumes:
-  influxdb-data:
-  grafana-data:
+isp-net:
+driver: bridge

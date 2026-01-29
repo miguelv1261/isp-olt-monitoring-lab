@@ -1,0 +1,5 @@
+flask
+ncclient
+xmltodict
+influxdb-client
+pyyaml
